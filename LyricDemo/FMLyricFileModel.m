@@ -531,7 +531,9 @@
     NSLog(@"sentence:%@,beginTime:%@,duration:%@",sentence,sentenceBeginTime,sentenceDuration);
     if([self isDigitString:sentenceBeginTime] && [self isDigitString:sentenceDuration]){
         NSInteger sentenceEndTime = [sentenceBeginTime intValue] + [sentenceDuration intValue];
+        
         FMLyricSentenceModel* sentenceModel = [[FMLyricSentenceModel alloc] initWithSentence:sentence beginTime:[sentenceBeginTime intValue] duration:[sentenceDuration intValue] endTime:sentenceEndTime line:curLineIdx relativeWordModels:relativeWordModels absoluteWordModels:absoluteWordModels allWordsDuration:allWordsDuration];
+        
         [sentencseDict setObject:sentenceModel forKey:sentenceBeginTime];
     }else{
         NSLog(@"存在非法时间符号，当前行：%@",line);
@@ -683,9 +685,9 @@
 }
 
 - (BOOL)isDigitString:(NSString*)string{
-    float tmpVal;
+    int tmpVal;
     NSScanner* scan = [NSScanner scannerWithString:string];
-    return [scan scanFloat:&tmpVal] && [scan isAtEnd];
+    return [scan scanInt:&tmpVal] && [scan isAtEnd];
 }
 
 @end

@@ -57,6 +57,7 @@
     _lyricPanel.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"glance_bg"]];
     _lyricPanel.alpha = 0.6;
     [self.view addSubview:_lyricPanel];
+    
 }
 
 - (void)initSlider{

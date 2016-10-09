@@ -57,6 +57,8 @@
 @property (nonatomic, assign, readwrite) BOOL isDraging;
 @property (nonatomic, assign, readwrite) CGFloat scrollToTimeMills;
 
+@property (nonatomic, assign, readwrite) LyricType lyricTypeToShow;
+
 @end
 
 @interface FMLyricFullView () <UIScrollViewDelegate>
@@ -106,6 +108,8 @@
     self.curScrollOffsetYArr = [NSMutableArray array];
  
     self.isDraging = NO;
+    
+    self.lyricTypeToShow = self.singleLyricModel.lyricType;
 }
 
 - (void)_initLyricScrollView{
@@ -146,7 +150,7 @@
 
 - (void)layoutLyricPanel{
     
-    FMSingleLyricModel* singleLyricModel = [self.lyricFileModel getSingleLyricModelWithIndex:_lyricIdxToShow];
+    FMSingleLyricModel* singleLyricModel = self.singleLyricModel;
     
     NSUInteger allCntOfLines = singleLyricModel.sentencseDict.count;
     
@@ -198,21 +202,19 @@
         NSString* key = allBeginTimeStamp[i];
         [labelLine setText:singleLyricModel.sentencseDict[key].sentence];
         
-        CGSize textSize = [labelLine textSizeWithWidthLimit];
-        
+        CGSize textSize = [labelLine textSizeWithHeightLimit];
         CGFloat labelH = textSize.height;
-        //CGFloat labelW = textSize.width;
-        
-        //CGFloat labelX;
+
         CGFloat labelY;
+        
+        
         
         if(textSize.width <= self.lyricDispalayWidth){
             
             //labelX = (self.lyricScrollView.frame.size.width - textSize.width) * 0.5;
         }else{
             NSLog(@"有折行");
-            //labelX = 20;
-            //labelW = self.lyricScrollView.frame.size.width - 20 * 2;
+            
         }
         
         labelY = curLabelY;
@@ -221,9 +223,7 @@
         //NSLog(@"i=%zd,当前Lable的高度：%f,当前Lable的Y：%f",i,labelH,labelY);
         
         CGRect labelFrame = labelLine.frame;
-        //labelFrame.origin.x = labelX;
         labelFrame.origin.y = labelY;
-        //labelFrame.size.width = labelW;
         labelFrame.size.height = labelH;
         labelLine.frame = labelFrame;
         
@@ -334,6 +334,9 @@
     return  [self.lyricFileModel getSingleLyricModelWithIndex:_lyricIdxToShow];
 }
 
+- (LyricType)lyricTypeToShow{
+    return self.singleLyricModel.lyricType;
+}
 
 //这两个函数play和pause 有Bug：拖动滑块会跳过某一行，过一段时间直接跳到下一行逐字了
 - (void)resumeAnimation{
@@ -348,6 +351,16 @@
 
 - (void)repaintWithProgressTime:(double)progressTime{
     //millProgressTime:毫秒;
+    if(progressTime < 0){
+        NSLog(@"参数progressTime[%f]有误",progressTime);
+        return;
+    }
+    
+    if(self.lyricTypeToShow == LyricType_UnKnow){
+        NSLog(@"歌词类型未知，无法显示");
+        return;
+    }
+    
     NSInteger millProgressTime = (int) (progressTime * kMillSceondsPerSecond);
     
     NSInteger curLine;
@@ -356,8 +369,14 @@
     
     NSString* matchedBeginTimeKey = [self _getCurSentenceTimeStampWithPregressTime:millProgressTime curLine:&curLine curColumn:&curColumn isLastColumn:&isLastColumn];
     
-    if(matchedBeginTimeKey.length <= 0 || curLine < 0 || curColumn < 0){
-        NSLog(@"参数progressTime[%f]有误",progressTime);
+    
+    if(matchedBeginTimeKey.length <= 0 || curLine < 0){
+        NSLog(@"第一句还未开始");
+        return;
+    }
+    
+    if(curColumn < 0 && self.lyricTypeToShow == LyricType_QRC){
+        NSLog(@"第一列还未开始");
         return;
     }
     
@@ -369,8 +388,11 @@
     
     [self resetPanelSentenceColor];
     
+    
     if(stillInSameLine){
-        NSLog(@"同一行内，当前行：curLine:%zd,当前列：%zd,text:%@,word:%@",curLine,curColumn,[lineLabel text],[[lineLabel text] substringWithRange:NSMakeRange(curColumn, 1)]);
+        if(curColumn >= 0){
+            NSLog(@"同一行内，当前行：curLine:%zd,当前列：%zd,text:%@,word:%@",curLine,curColumn,[lineLabel text],[[lineLabel text] substringWithRange:NSMakeRange(curColumn, 1)]);
+        }
         //同一行内：打开 关闭 打开 关闭 循环测试
         if(self.shouldHightenedByWord){
            //在本行逐字开关依然打开
@@ -416,6 +438,25 @@
 }
 //公用动画函数
 - (void)startLineLabelAnimation:(FMLyricLabel*)lineLabel fromColumn:(NSInteger)fromColumn withMatchedBeginTimeKey:(NSString*)matchedBeginTimeKey isLastColumn:(BOOL)isLastColumn{
+    
+    if(fromColumn < 0){
+        NSLog(@"fromColumn必须为非负值");
+        return;
+    }
+    
+    if(self.lyricTypeToShow == LyricType_LRC || self.lyricTypeToShow == LyricType_UnKnow){
+        return; //LRC或者Unknow类型歌词无法逐字控制
+    }
+    
+    if (isLastColumn) {
+        if(self.shouldHightenedByWord){
+            [self resetPanelSentenceColor];
+        }
+        NSLog(@"最后一列，移除动画");
+        [lineLabel removeAnimation];
+        return;
+    }
+    
     NSMutableArray<NSNumber *>* timesArr = [NSMutableArray array];
     NSMutableArray<NSNumber *> *locationArr = [NSMutableArray array];
     
@@ -458,15 +499,6 @@
     [timesArr addObject:@(finalEndTimePoint)];//最后一个词的开始时间＋最后一个词的持续时间)
     [locationArr addObject:@(curLocationPoint)];
     
-    if (isLastColumn) {
-        if(self.shouldHightenedByWord){
-            [self resetPanelSentenceColor];
-        }
-        NSLog(@"最后一列，移除动画");
-        [lineLabel removeAnimation];
-        return;
-    }
-    
     [lineLabel startAnimationWithTimesAbsoluteArr:timesArr locationPercentArr:locationArr duration:leftDutation];
     
     //[lineLabel showAnimation];
@@ -497,7 +529,7 @@
             FMLyricLabel* label = (FMLyricLabel*)subview;
             
             if (label == self.curLineLabel) {
-                if(self.shouldHightenedByWord){
+                if(self.shouldHightenedByWord && self.lyricTypeToShow == LyricType_QRC){
                     [label setTextColor:self.normalSentenceColor maskColor:self.highlightedWordColor];
                 }else{
                     [label setTextColor:self.curSentenceColor maskColor:self.highlightedWordColor];
@@ -507,7 +539,7 @@
             }
             
             //不是高亮行的行，如果有动画，则动画移除，再变色
-           if((label != self.curLineLabel) && [label isOpenedAnimation]){
+           if((label != self.curLineLabel) && [label isOpenedAnimation] && self.lyricTypeToShow == LyricType_QRC){
                [label removeAnimation];
            }
             
@@ -548,32 +580,37 @@
         mattchedBeginTimeKey = _sortedBeginTimeKeys[expLineIdx];
         *curLine = expLineIdx;
         
-        FMSingleLyricModel* singleLyricModel =  [self.lyricFileModel getSingleLyricModelWithIndex:_lyricIdxToShow];
-        FMLyricSentenceModel* curSentenceModel = singleLyricModel.sentencseDict[mattchedBeginTimeKey];
-        
-        *isLastColumn = NO;
-        NSArray<FMLyricWordModel*>* sortedWordModels = [curSentenceModel sortedAbsoluteWordModelsByBeginTime];
-        for (int i = 0; i < sortedWordModels.count; i++) {
-            if(millProgressTime == sortedWordModels[i].beginTime){
-                expColumnIdx = i;
-                break;
-            }else if(millProgressTime < sortedWordModels[i].beginTime){
-                expColumnIdx = i - 1;
-                break;
-            }else{
-                if(i == (sortedWordModels.count - 1)){
+        if(self.lyricTypeToShow == LyricType_QRC){
+            
+            FMSingleLyricModel* singleLyricModel =  [self.lyricFileModel getSingleLyricModelWithIndex:_lyricIdxToShow];
+            FMLyricSentenceModel* curSentenceModel = singleLyricModel.sentencseDict[mattchedBeginTimeKey];
+            
+            *isLastColumn = NO;
+            NSArray<FMLyricWordModel*>* sortedWordModels = [curSentenceModel sortedAbsoluteWordModelsByBeginTime];
+            for (int i = 0; i < sortedWordModels.count; i++) {
+                if(millProgressTime == sortedWordModels[i].beginTime){
                     expColumnIdx = i;
-                    *isLastColumn = YES;
                     break;
+                }else if(millProgressTime < sortedWordModels[i].beginTime){
+                    expColumnIdx = i - 1;
+                    break;
+                }else{
+                    if(i == (sortedWordModels.count - 1)){
+                        expColumnIdx = i;
+                        *isLastColumn = YES;
+                        break;
+                    }
                 }
             }
+            
+            *curColumn = expColumnIdx;
+        }else{
+            *curColumn = -1;
         }
         
-        *curColumn = expColumnIdx;
         
     }else{
         mattchedBeginTimeKey = nil;
-        *curLine = -1;
         *curColumn = -1;
     }
     
@@ -587,6 +624,8 @@
     if(self.isDraging){
         return;
     }
+   
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(scrollToCurrentSentence) object:nil];
     
     self.isDraging = YES;
     
@@ -625,8 +664,9 @@
 }
 //在一次拖动减速过程未结束再次拖动时不会调用，只会在彻底拖动结束后才会调用
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
-     self.isDraging = NO;
+    self.isDraging = NO;
     [self performSelector:@selector(scrollToCurrentSentence) withObject:nil afterDelay:self.dragFinishDelayTime];
+    
 }
 
 - (void)standerLineRightPlayBtnPressAction:(UIButton*)sender{
