@@ -75,6 +75,18 @@
  */
 - (FMLyricWordModel*)getLyricWordModellWithIndex:(NSInteger)idx beginTime:(NSString*)beginTime;
 
+/**
+ * 设置长歌词折行处理
+ */
+- (void)setLongSentenceWrap:(BOOL)shouldLongSentenceWrap;
 
+- (BOOL)shouldLongSentenceWrap;
+
+/**
+*  设置折行后，每行的最大字数（只有打开折行开关才有效）
+*/
+- (void)setMaxWordNumPerLine:(NSUInteger)maxWordNumPerLine;
+
+- (NSUInteger)getMaxWordNumPerLine;
 
 @end

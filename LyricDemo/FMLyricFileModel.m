@@ -51,6 +51,9 @@
 
 @property (nonatomic, strong, readonly) NSString* RC_metaInfoPatternImp;
 
+@property (nonatomic, assign, readwrite) BOOL shouldLongSentenceWrap;
+@property (nonatomic, assign, readwrite) NSUInteger maxWordNumPerLine;
+
 @end
 
 
@@ -72,6 +75,9 @@
         _QRC_wordUnitPatternTmp = @"\\(\\d+,\\d+\\)";
         _LRC_sentencePatternTmp = @"\\[\\d+:\\d+\\.\\d+\\]";
         _RC_metaInfoPatternImp = @"\\[\\w+:\\w*\\]";
+        
+        _shouldLongSentenceWrap = YES;
+        _maxWordNumPerLine = 17;
     }
     return self;
 }
@@ -104,6 +110,25 @@
     }
     return self;
     
+}
+
+- (void)setLongSentenceWrap:(BOOL)shouldLongSentenceWrap{
+    _shouldLongSentenceWrap = shouldLongSentenceWrap;
+}
+
+- (BOOL)shouldLongSentenceWrap{
+    return _shouldLongSentenceWrap;
+}
+
+- (void)setMaxWordNumPerLine:(NSUInteger)maxWordNumPerLine{
+    if(!self.shouldLongSentenceWrap){
+        NSLog(@"设置了每行最大字数，却没打开折行开关(使用%@)",NSStringFromSelector(@selector(setLongSentenceWrap:)));
+    }
+    _maxWordNumPerLine = maxWordNumPerLine;
+}
+
+- (NSUInteger)getMaxWordNumPerLine{
+    return _maxWordNumPerLine;
 }
 
 #pragma mark - 对外接口
@@ -534,7 +559,49 @@
         
         FMLyricSentenceModel* sentenceModel = [[FMLyricSentenceModel alloc] initWithSentence:sentence beginTime:[sentenceBeginTime intValue] duration:[sentenceDuration intValue] endTime:sentenceEndTime line:curLineIdx relativeWordModels:relativeWordModels absoluteWordModels:absoluteWordModels allWordsDuration:allWordsDuration];
         
-        [sentencseDict setObject:sentenceModel forKey:sentenceBeginTime];
+        
+        if(self.shouldLongSentenceWrap && (sentenceModel.absoluteWordModels.count > self.maxWordNumPerLine)){  //35
+            //单行歌词字数超过17，开始折行处理
+            NSLog(@"单行歌词字数超过17，开始折行处理［%@］",sentenceModel.sentence);
+            
+            NSInteger lineWrapNum = sentenceModel.absoluteWordModels.count / self.maxWordNumPerLine + 1;  //3
+            NSInteger wordNumPerWrapLine = sentenceModel.absoluteWordModels.count / lineWrapNum;  //11,最后一行:35-11*2
+            NSInteger wordNumForLastWrapLine = sentenceModel.absoluteWordModels.count - wordNumPerWrapLine * (lineWrapNum - 1);
+            
+            NSArray<FMLyricWordModel*>* sentenceSortedAbsoWordModels = sentenceModel.sortedAbsoluteWordModelsByBeginTime;
+            NSArray<FMLyricWordModel*>* sentenceSortedRelaWordModels = sentenceModel.sortedRelativeWordModelsByBeginTime;
+            
+            for (NSUInteger i = 0; i < lineWrapNum; i++) {
+                
+                NSArray<FMLyricWordModel*>* wrapSentenceAbsoWordModels;
+                NSArray<FMLyricWordModel*>* wrapSentenceRelaWordModels;
+                
+                if(i != (lineWrapNum - 1)){
+                    wrapSentenceAbsoWordModels = [sentenceSortedAbsoWordModels subarrayWithRange:NSMakeRange(i * wordNumPerWrapLine, wordNumPerWrapLine)];
+                    wrapSentenceRelaWordModels = [sentenceSortedRelaWordModels subarrayWithRange:NSMakeRange(i * wordNumPerWrapLine, wordNumPerWrapLine)];
+                }else{
+                    //最后一行
+                    wrapSentenceAbsoWordModels = [sentenceSortedAbsoWordModels subarrayWithRange:NSMakeRange(i * wordNumPerWrapLine, wordNumForLastWrapLine)];
+                    wrapSentenceRelaWordModels = [sentenceSortedRelaWordModels subarrayWithRange:NSMakeRange(i * wordNumPerWrapLine, wordNumForLastWrapLine)];
+                }
+                
+                NSInteger wrapSentenceBeginTime = wrapSentenceAbsoWordModels.firstObject.beginTime;
+                NSInteger wrapSentenceEndTime = wrapSentenceAbsoWordModels.lastObject.beginTime + wrapSentenceAbsoWordModels.lastObject.duration;
+                NSMutableString* wrapSentence = [NSMutableString string];
+                NSInteger allWrapWordDuration = 0;
+                for (NSUInteger j = 0; j < wrapSentenceAbsoWordModels.count; j++) {
+                    [wrapSentence appendString:wrapSentenceAbsoWordModels[j].word];
+                    
+                    allWrapWordDuration += wrapSentenceAbsoWordModels[j].duration;
+                }
+                
+                FMLyricSentenceModel* wrapSentenceModel = [[FMLyricSentenceModel alloc] initWithSentence:wrapSentence beginTime:wrapSentenceBeginTime duration:allWrapWordDuration endTime:wrapSentenceEndTime line:curLineIdx relativeWordModels:wrapSentenceRelaWordModels absoluteWordModels:wrapSentenceAbsoWordModels allWordsDuration:allWrapWordDuration];
+                [sentencseDict setObject:wrapSentenceModel forKey:[NSString stringWithFormat:@"%zd", wrapSentenceBeginTime]];
+            }
+            
+        }else{
+            [sentencseDict setObject:sentenceModel forKey:sentenceBeginTime];
+        }
     }else{
         NSLog(@"存在非法时间符号，当前行：%@",line);
     }
