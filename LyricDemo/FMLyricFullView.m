@@ -207,14 +207,8 @@
 
         CGFloat labelY;
         
-        
-        
-        if(textSize.width <= self.lyricDispalayWidth){
-            
-            //labelX = (self.lyricScrollView.frame.size.width - textSize.width) * 0.5;
-        }else{
-            NSLog(@"有折行");
-            
+        if(textSize.width > self.lyricDispalayWidth){
+           NSLog(@"有折行");
         }
         
         labelY = curLabelY;

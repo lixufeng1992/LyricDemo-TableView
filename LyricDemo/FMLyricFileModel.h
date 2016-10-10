@@ -89,4 +89,11 @@
 
 - (NSUInteger)getMaxWordNumPerLine;
 
+/**
+ *  设置是否过滤空行（歌词行只有时间戳，没有对应的句子字符串）
+ */
+- (void)setFilterEmptyLine:(BOOL)shouldFilterEmptyLine;
+
+- (BOOL)shouldFilterEmptyLine;
+
 @end

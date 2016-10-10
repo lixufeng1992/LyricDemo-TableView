@@ -166,7 +166,7 @@
     NSString* fileName = @"lyric.qrc";
     NSString* lyricFilepath = [docPath stringByAppendingPathComponent:fileName];
     
-    [self.lyricPanel setLyricIdxToShow:3];
+    [self.lyricPanel setLyricIdxToShow:1];
     [self.lyricPanel loadLyricAtPath:lyricFilepath translateLyricAtPath:nil];
     
     //[self startTimer];
@@ -186,7 +186,6 @@
     }];
     
     [[NSRunLoop currentRunLoop] addTimer:_timer forMode:NSRunLoopCommonModes];
-
 }
 
 - (void)stopTimer{

@@ -5,7 +5,7 @@
 //  Created by lixufeng on 16/9/5.
 //  Copyright © 2016年 tencent. All rights reserved.
 //
-#define singleViewOn 1
+#define singleViewOn 0
 
 #import "AppDelegate.h"
 #import "FMLyricViewController.h"

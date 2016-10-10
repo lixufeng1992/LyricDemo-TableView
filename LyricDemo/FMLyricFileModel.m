@@ -51,8 +51,12 @@
 
 @property (nonatomic, strong, readonly) NSString* RC_metaInfoPatternImp;
 
+//全屏歌词是否开启折行处理
 @property (nonatomic, assign, readwrite) BOOL shouldLongSentenceWrap;
 @property (nonatomic, assign, readwrite) NSUInteger maxWordNumPerLine;
+
+//是否过滤空行（只有时间戳，没有对应的句子字符串）
+@property (nonatomic, assign, readwrite) BOOL shouldFilterEmptyLine;
 
 @end
 
@@ -78,6 +82,8 @@
         
         _shouldLongSentenceWrap = YES;
         _maxWordNumPerLine = 17;
+        
+        _shouldFilterEmptyLine = YES;
     }
     return self;
 }
@@ -109,8 +115,9 @@
         [self _setupWithContent:content];
     }
     return self;
-    
 }
+
+#pragma mark - 对外接口
 
 - (void)setLongSentenceWrap:(BOOL)shouldLongSentenceWrap{
     _shouldLongSentenceWrap = shouldLongSentenceWrap;
@@ -131,11 +138,17 @@
     return _maxWordNumPerLine;
 }
 
-#pragma mark - 对外接口
+- (void)setFilterEmptyLine:(BOOL)shouldFilterEmptyLine{
+    _shouldFilterEmptyLine = shouldFilterEmptyLine;
+}
+
+- (BOOL)shouldFilterEmptyLine{
+    return _shouldFilterEmptyLine;
+}
 
 - (FMSingleLyricModel*)getSingleLyricModelWithIndex:(NSInteger)idx{
     
-    if(idx < 0 || idx > self.lyricCount){
+    if(idx < 0 || idx >= self.lyricCount){
         NSLog(@"解析到歌词数量：%zd,你的idx越界",self.lyricCount);
         return nil;
     }
@@ -143,14 +156,14 @@
     return lyricSingleModel;
 }
 
-- (FMLyricWordModel*)getLyricWordModellWithIndex:(NSInteger)idx beginTime:(NSString*)beginTime{
+- (FMLyricWordModel*)_getLyricWordModellWithIndex:(NSInteger)idx beginTime:(NSString*)beginTime{
     
     if(_lyricFileType == FMLyricFileTypeLRC){
         NSLog(@"LRC格式无法提供字词级别的对准精度");
         return nil;
     }
     
-    if(idx < 0 || idx > self.lyricCount){
+    if(idx < 0 || idx >= self.lyricCount){
         NSLog(@"歌词数量：%zd,参数idx越界",self.lyricCount);
         return nil;
     }
@@ -190,15 +203,17 @@
     switch (_lyricFileType) {
         case FMLyricFileTypeLRC:{
             //LRC格式
+            self.isLRCLyicContentSeparatedByNewLine = YES;//LRC文件不会丢失换行符
             [self _parseLRCFileContent:fileContent];
         }
             break;
         case FMLyricFileTypeQRC:{
             //QRC格式,XML解析
+            self.isLRCLyicContentSeparatedByNewLine = NO;//QRC文件解析后会丢失换行符
             [self _parseRQCFileContent:fileContent];
         }
         case FMLyricFileTypeAuto:{
-            FMLyricFileType mayFileType = [self getLyricFileTypeFromFileContent:fileContent];
+            FMLyricFileType mayFileType = [self _getLyricFileTypeFromFileContent:fileContent];
             if(mayFileType == FMLyricFileTypeLRC){
                 [self _parseLRCFileContent:fileContent];
             }else if(mayFileType == FMLyricFileTypeQRC){
@@ -216,7 +231,7 @@
 }
 
 //智能解析文件内容
-- (FMLyricFileType)getLyricFileTypeFromFileContent:(NSString*)fileContent{
+- (FMLyricFileType)_getLyricFileTypeFromFileContent:(NSString*)fileContent{
     
     NSString* lyricFileTypeQRCPatternImpl = @"<\\?\\s*xml*";
     NSString* lyricFileTypeLRCPatternImpl = _LRC_sentencePatternTmp;
@@ -341,6 +356,13 @@
 
     NSString* sentence = [line substringFromIndex:sentenceBeginTimeRange.location + sentenceBeginTimeRange.length];
     
+    if(self.shouldFilterEmptyLine){//过滤空行
+        if(!sentence || [[sentence stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] isEqualToString:@""]){
+            NSLog(@"当前歌词行[%zd]为空行，且开启了过滤空行开关，已经过滤",curLineIdx);
+            return;
+        }
+    }
+    
     NSRange sentenceBeginTimeLeftBracketRange = [sentenceBeginTimeBracketText rangeOfString:@"["];
     NSRange sentenceBeginTimeRightBracketRange = [sentenceBeginTimeBracketText rangeOfString:@"]"];
     
@@ -352,7 +374,7 @@
         FMLyricSentenceModel* sentenceModel = [[FMLyricSentenceModel alloc] initWithSentence:sentence beginTime:[sentenceBeginTime intValue] duration:-1 endTime:0 line:curLineIdx relativeWordModels:nil absoluteWordModels:nil allWordsDuration:-1];
         [sentencseDict setObject:sentenceModel forKey:sentenceBeginTime];
     }else{
-        NSLog(@"当前行格式有误，句子开始时间必需是数字，当前行：%@",line);
+        NSLog(@"当前行格式有误，句子开始时间必需是数字，歌词行：%zd",curLineIdx);
     }
     
 }
@@ -360,6 +382,16 @@
 #pragma mark － QRC文件解析
 
 - (void)_parseRQCFileContent:(NSString*)fileContent{
+    
+    NSLog(@"十首歌词长度：%zd",fileContent.length);
+    if(fileContent.length > 10 * 6000){
+        //文件内容超过十首歌
+        self.isXML2ParserTurnOn = NO;
+        NSLog(@"采用NSXMLParser SAX解析");
+    }else{
+        self.isXML2ParserTurnOn = YES;
+        NSLog(@"采用GData Dom解析");
+    }
     
     if(self.isXML2ParserTurnOn){
         NSError* errorInParser;
