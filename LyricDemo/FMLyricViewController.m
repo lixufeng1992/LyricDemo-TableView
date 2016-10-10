@@ -8,7 +8,7 @@
 
 #import "FMLyricViewController.h"
 #import "FMLyricFullView.h"
-#import "FMConst.h"
+#import "FMLyricModelConst.h"
 #import "FMLyricFileModel.h"
 
 

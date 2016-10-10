@@ -83,8 +83,8 @@
 - (BOOL)shouldLongSentenceWrap;
 
 /**
-*  设置折行后，每行的最大字数（只有打开折行开关才有效）
-*/
+ *  设置折行后，每行的最大字数（只有打开折行开关才有效）
+ */
 - (void)setMaxWordNumPerLine:(NSUInteger)maxWordNumPerLine;
 
 - (NSUInteger)getMaxWordNumPerLine;

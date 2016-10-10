@@ -1,5 +1,5 @@
 //
-//  FMLyricPanel.h
+//  FMLyricFullView.h
 //  LyricDemo
 //
 //  Created by lixufeng on 16/9/13.
@@ -7,8 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "FMConst.h"
+#import "FMLyricViewConst.h"
 #import "FMLyricLabel.h"
+#import "FMLyricModelConst.h"
 
 
 @class FMLyricFullView;
@@ -51,6 +52,8 @@
                curSentenceColor:(UIColor *)curSentenceColor
             normalSentenceColor:(UIColor *)normalSentenceColor;
 
+- (void)setCurSentenceFont:(UIFont *)curSentenceFont
+        normalSentenceFont:(UIFont *)normalSentenceFont;
 
 - (void)setTextAlignment:(FMTextAlignment)textAlignment;
 

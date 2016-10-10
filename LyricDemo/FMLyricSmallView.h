@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "FMConst.h"
+#import "FMLyricViewConst.h"
+#import "FMLyricModelConst.h"
 
 @interface FMLyricSmallView : UIView
 
@@ -28,6 +29,8 @@
 - (void)setHighlightedWordColor:(UIColor *)highlightedWordColor
                curSentenceColor:(UIColor *)curSentenceColor
             normalSentenceColor:(UIColor *)normalSentenceColor;
+
+- (void)setCurSentenceFont:(UIFont *)curSentenceFont;
 
 - (void)setTextAlignment:(FMTextAlignment)textAlignment;
 

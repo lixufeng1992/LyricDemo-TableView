@@ -36,7 +36,7 @@
 
 //歌词索引，用于QRC中歌词遍历
 @property (nonatomic ,assign, readwrite) NSUInteger lyricIdx;
- //从本歌词文件中解析出的所有歌词Model
+//从本歌词文件中解析出的所有歌词Model
 @property (nonatomic, strong, readwrite) NSMutableArray<FMSingleLyricModel*>* lyricModels;
 
 @property (nonatomic, assign, readwrite) BOOL isXML2ParserTurnOn;
@@ -83,7 +83,7 @@
         _shouldLongSentenceWrap = YES;
         _maxWordNumPerLine = 17;
         
-        _shouldFilterEmptyLine = YES;
+        _shouldFilterEmptyLine = NO;
     }
     return self;
 }
@@ -156,7 +156,7 @@
     return lyricSingleModel;
 }
 
-- (FMLyricWordModel*)_getLyricWordModellWithIndex:(NSInteger)idx beginTime:(NSString*)beginTime{
+- (FMLyricWordModel*)getLyricWordModellWithIndex:(NSInteger)idx beginTime:(NSString*)beginTime{
     
     if(_lyricFileType == FMLyricFileTypeLRC){
         NSLog(@"LRC格式无法提供字词级别的对准精度");
@@ -274,7 +274,7 @@
 }
 
 - (FMSingleLyricModel*)_parseLRCLyricContent_hasNewLine:(NSString*)lyricContent{
-   
+    
     sentencseDict = [NSMutableDictionary dictionary];
     wordsDict = nil;
     
@@ -353,7 +353,7 @@
     
     //[19:38.00]
     NSString* sentenceBeginTimeBracketText = [line substringWithRange:sentenceBeginTimeRange];
-
+    
     NSString* sentence = [line substringFromIndex:sentenceBeginTimeRange.location + sentenceBeginTimeRange.length];
     
     if(self.shouldFilterEmptyLine){//过滤空行
@@ -442,7 +442,7 @@
                                 self.lyricIdx ++;
                             }
                                 break;
-
+                                
                             default:{
                                 NSLog(@"暂不支持其他格式");
                             }
@@ -452,7 +452,7 @@
                 }//end of inner for
                 
             }//enf of if
-          
+            
         }//enf of outer for
         CFAbsoluteTime end1 = CFAbsoluteTimeGetCurrent();
         NSLog(@"采用libxml2耗时：%f",end1 - begin1);
@@ -497,7 +497,7 @@
         
         NSRange lineRange = NSMakeRange(lineBeginBracketRange.location, nextLineBeginBracketRange.location - lineBeginBracketRange.location);
         NSString* line = [lyricContent substringWithRange:lineRange];
-     
+        
         line = [line stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         //解析每行
         curLineIdx++;
@@ -514,7 +514,7 @@
 - (void)_QRC_parseLine:(NSString*)line curLineIdx:(NSUInteger)curLineIdx{
     
     NSRange sentenceBeginTimeAndDurationRange = [line rangeOfString:_QRC_sentencePatternTmp options:NSRegularExpressionSearch];
-   
+    
     NSString* sentenceBeginTimeAndDuration = [line substringWithRange:sentenceBeginTimeAndDurationRange];
     
     NSRange sentenceTimeLeftBracketRange = [sentenceBeginTimeAndDuration rangeOfString:@"["];
@@ -562,7 +562,7 @@
         wordDuration = [wordDuration stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         
         NSString* word = [wordUnit substringToIndex:wordBeginTimeAndDurationRange.location];
-       
+        
         if([self isDigitString:wordBeginTime] && [self isDigitString:wordDuration]){
             curColumnIdx++;
             FMLyricWordModel* wordModel = [[FMLyricWordModel alloc] initWithWord:word beginTime:[wordBeginTime intValue] duration:[wordDuration intValue] line:curLineIdx column:curColumnIdx];
@@ -642,7 +642,7 @@
 #pragma mark -歌曲元信息解析
 - (void)_parseMetaInfo{
     //[ti:][ar:汪苏泷][al:一笑倾城][by:][offset:0]
-   
+    
     NSString* metaInfoStr = metaInfo;
     metaInfoStr = [metaInfoStr stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     if(!metaInfoStr || [metaInfoStr isEqualToString:@""]){

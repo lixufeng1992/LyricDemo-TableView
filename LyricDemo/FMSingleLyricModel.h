@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CoreGraphics.h>
-#import "FMConst.h"
+#import "FMLyricModelConst.h"
 
 typedef NS_ENUM(NSInteger, LyricType){
     LyricType_UnKnow = -1,

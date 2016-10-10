@@ -63,7 +63,7 @@
     self.lyricScrollLine = [[UIScrollView alloc] initWithFrame:self.bounds];
     self.lyricScrollLine.showsVerticalScrollIndicator = NO;
     self.lyricScrollLine.showsHorizontalScrollIndicator = NO;
-    self.lyricScrollLine.backgroundColor = [UIColor blackColor];
+    self.lyricScrollLine.backgroundColor = [UIColor clearColor];
     self.lyricScrollLine.alpha = 0.8;
     self.lyricScrollLine.contentSize =  CGSizeMake(SCREEN_WIDTH * 3, 0);
     [self addSubview:self.lyricScrollLine];
@@ -96,7 +96,7 @@
 - (NSArray<NSString*>*) sortedBeginTimeKeys{
     
     if(!_sortedBeginTimeKeys){
-    
+        
         FMSingleLyricModel* singleLyricModel = self.singleLyricModel;
         NSArray<NSString*>* allBeginTimeStamp = [singleLyricModel.sentencseDict.allKeys copy];
         allBeginTimeStamp = [allBeginTimeStamp sortedArrayUsingComparator:^NSComparisonResult(NSString*  _Nonnull obj1, NSString*  _Nonnull obj2) {
@@ -115,14 +115,13 @@
     return _sortedBeginTimeKeys;
 }
 
-
-
 - (void)initCurLineLabel{
     
     FMLyricLabel* labelLine = [[FMLyricLabel alloc] initWithFrame:self.bounds];
-        
+    
     [labelLine setLineBreakEnable:NO];
     [labelLine setLyricDispalayWidth:self.lyricDispalayWidth];
+    [labelLine setHighlitenedFont:_curSentenceFont normalFont:_curSentenceFont];
     
     switch (self.textAlignment) {
         case FMTextAlignmentLeft:
@@ -138,7 +137,9 @@
             [labelLine setTextAlignment:NSTextAlignmentCenter];
             break;
     }
-        
+    
+    [labelLine setTextColor:self.normalSentenceColor maskColor:self.highlightedWordColor];
+    
     self.curLineLabel = labelLine;
     
     [self.lyricScrollLine addSubview:self.curLineLabel];
@@ -203,6 +204,9 @@
     return  [self.lyricFileModel getSingleLyricModelWithIndex:_lyricIdxToShow];
 }
 
+- (LyricType)lyricTypeToShow{
+    return self.singleLyricModel.lyricType;
+}
 
 //这两个函数play和pause 有Bug：拖动滑块会跳过某一行，过一段时间直接跳到下一行逐字了
 - (void)resumeAnimation{
@@ -217,6 +221,17 @@
 
 - (void)repaintWithProgressTime:(double)progressTime{
     
+    if(progressTime < 0){
+        NSLog(@"参数progressTime[%f]有误",progressTime);
+        return;
+    }
+    
+    if(self.lyricTypeToShow == LyricType_UnKnow){
+        NSLog(@"歌词类型未知，无法显示");
+        return;
+    }
+    
+    
     NSInteger millProgressTime = (int) (progressTime * kMillSceondsPerSecond);
     NSInteger curLine;
     NSInteger curColumn;
@@ -224,8 +239,13 @@
     
     NSString* matchedBeginTimeKey = [self _getCurSentenceTimeStampWithPregressTime:millProgressTime curLine:&curLine curColumn:&curColumn isLastColumn:&isLastColumn];
     
-    if(matchedBeginTimeKey.length <= 0 || curLine < 0 || curColumn < 0){
-        NSLog(@"参数progressTime[%f]有误",progressTime);
+    if(matchedBeginTimeKey.length <= 0 || curLine < 0){
+        NSLog(@"第一句还未开始");
+        return;
+    }
+    
+    if(curColumn < 0 && self.lyricTypeToShow == LyricType_QRC){
+        NSLog(@"第一列还未开始");
         return;
     }
     
@@ -236,56 +256,61 @@
     [self resetCurSentenceColor];
     
     if(stillInSameLine){
-        NSLog(@"同一行内，当前行：curLine:%zd,当前列：%zd,text:%@,word:%@",curLine,curColumn,[self.curLineLabel text],[[self.curLineLabel text] substringWithRange:NSMakeRange(curColumn, 1)]);
-        
-        //跑马灯
-        if(self.prevColumn != curColumn){//到下一列了
-            if(self.shouldHorseRace && curColumn >= self.midColumn){
-                CGPoint contentOffset = self.lyricScrollLine.contentOffset;
-                
-                CGFloat truncWidth = [self getTruncWidthForCurLine];
-                
-                if(contentOffset.x < truncWidth){
-                    
-                    contentOffset.x += [self getColumnWidthWithLine:self.curLine column:curColumn];
-                    [UIView animateWithDuration:0.5 animations:^{
-                        self.lyricScrollLine.contentOffset = contentOffset;
-                    }];
-                }
-                
-            }
-            self.prevColumn = curColumn;
+        if(curColumn >= 0){
+            NSLog(@"同一行内，当前行：curLine:%zd,当前列：%zd,text:%@,word:%@",curLine,curColumn,[self.curLineLabel text],[[self.curLineLabel text] substringWithRange:NSMakeRange(curColumn, 1)]);
         }
-        //同一行内：打开 关闭 打开 关闭 循环测试
-        if(self.shouldHightenedByWord){
-            //在本行逐字开关依然打开
-            if(![self.curLineLabel isOpenedAnimation]){
-                //本行上没有动画，中间时点击了逐字开关，从curColumn位置开始动画
-                [self startLineLabelAnimation:self.curLineLabel fromColumn:curColumn withMatchedBeginTimeKey:matchedBeginTimeKey isLastColumn:isLastColumn];
-            }else{
-                //本行已经开启了动画，什么都不做
+        
+        if(self.lyricTypeToShow == LyricType_QRC){
+            //跑马灯
+            if(self.prevColumn != curColumn){//到下一列了
+                if(self.shouldHorseRace && curColumn >= self.midColumn){
+                    CGPoint contentOffset = self.lyricScrollLine.contentOffset;
+                    
+                    CGFloat truncWidth = [self getTruncWidthForCurLine];
+                    
+                    if(contentOffset.x < truncWidth){
+                        
+                        contentOffset.x += [self getColumnWidthWithLine:self.curLine column:curColumn];
+                        [UIView animateWithDuration:0.5 animations:^{
+                            self.lyricScrollLine.contentOffset = contentOffset;
+                        }];
+                    }
+                    
+                }
+                self.prevColumn = curColumn;
             }
-        }else{
-            //在本行中间逐字开关被关闭
-            if([self.curLineLabel isOpenedAnimation]){
-                //本行已经开过动画，这会移除动画
-                NSLog(@"在本行中间逐字开关被关闭,本行已经开过动画，现在移除动画");
-                [self.curLineLabel removeAnimation];
+            //同一行内：打开 关闭 打开 关闭 循环测试
+            if(self.shouldHightenedByWord){
+                //在本行逐字开关依然打开
+                if(![self.curLineLabel isOpenedAnimation]){
+                    //本行上没有动画，中间时点击了逐字开关，从curColumn位置开始动画
+                    [self startLineLabelAnimation:self.curLineLabel fromColumn:curColumn withMatchedBeginTimeKey:matchedBeginTimeKey isLastColumn:isLastColumn];
+                }else{
+                    //本行已经开启了动画，什么都不做
+                }
             }else{
-                //本行未开过动画，啥事不做
+                //在本行中间逐字开关被关闭
+                if([self.curLineLabel isOpenedAnimation]){
+                    //本行已经开过动画，这会移除动画
+                    NSLog(@"在本行中间逐字开关被关闭,本行已经开过动画，现在移除动画");
+                    [self.curLineLabel removeAnimation];
+                }else{
+                    //本行未开过动画，啥事不做
+                }
             }
         }
     }else{
         NSLog(@"到下一行了,更新Label的内容");
         [self updateCurLabelData];
-        [self.curLineLabel removeAnimation];//到下一行了，下一行肯定没有加过动画
-        if(self.shouldHightenedByWord){
-            //本行开始时打开了逐字开关
-            [self startLineLabelAnimation:self.curLineLabel fromColumn:0 withMatchedBeginTimeKey:matchedBeginTimeKey isLastColumn:isLastColumn];
-        }else{
-            //本行开始时未打开逐字开关
+        if(self.lyricTypeToShow == LyricType_QRC){
+            [self.curLineLabel removeAnimation];//到下一行了，下一行肯定没有加过动画
+            if(self.shouldHightenedByWord){
+                //本行开始时打开了逐字开关
+                [self startLineLabelAnimation:self.curLineLabel fromColumn:0 withMatchedBeginTimeKey:matchedBeginTimeKey isLastColumn:isLastColumn];
+            }else{
+                //本行开始时未打开逐字开关
+            }
         }
-        
         self.lastUpdateedSentenceBeginTimeKey = matchedBeginTimeKey;
     }
 }
@@ -368,6 +393,25 @@
 
 //公用动画函数
 - (void)startLineLabelAnimation:(FMLyricLabel*)lineLabel fromColumn:(NSInteger)fromColumn withMatchedBeginTimeKey:(NSString*)matchedBeginTimeKey isLastColumn:(BOOL)isLastColumn{
+    
+    if(fromColumn < 0){
+        NSLog(@"fromColumn必须为非负值");
+        return;
+    }
+    
+    if(self.lyricTypeToShow == LyricType_LRC || self.lyricTypeToShow == LyricType_UnKnow){
+        return; //LRC或者Unknow类型歌词无法逐字控制
+    }
+    
+    if (isLastColumn) {
+        if(self.shouldHightenedByWord){
+            [self resetCurSentenceColor];
+        }
+        NSLog(@"最后一列，移除动画");
+        [lineLabel removeAnimation];
+        return;
+    }
+    
     NSMutableArray<NSNumber *>* timesArr = [NSMutableArray array];
     NSMutableArray<NSNumber *> *locationArr = [NSMutableArray array];
     
@@ -438,7 +482,7 @@
     }else{
         [self.curLineLabel setTextColor:self.curSentenceColor maskColor:self.highlightedWordColor];
     }
-
+    
 }
 
 - (NSString*)_getCurSentenceTimeStampWithPregressTime:(NSInteger)millProgressTime curLine:(NSInteger *)curLine curColumn:(NSInteger*)curColumn isLastColumn:(BOOL*)isLastColumn{

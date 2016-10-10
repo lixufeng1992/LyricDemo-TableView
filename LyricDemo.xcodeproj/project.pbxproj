@@ -43,11 +43,12 @@
 		775ED65E1D80005D0025FD10 /* GDataXMLNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GDataXMLNode.h; sourceTree = "<group>"; };
 		775ED65F1D80005D0025FD10 /* GDataXMLNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GDataXMLNode.m; sourceTree = "<group>"; };
 		775ED6611D8000810025FD10 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
+		777F98951DAB431E00EECEEC /* FMLyricModelConst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMLyricModelConst.h; sourceTree = "<group>"; };
+		777F98981DAB436600EECEEC /* FMLyricViewConst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMLyricViewConst.h; sourceTree = "<group>"; };
 		777FBFC51D94C7EF0081F6B3 /* FMLyricLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMLyricLabel.h; sourceTree = "<group>"; };
 		777FBFC61D94C7EF0081F6B3 /* FMLyricLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMLyricLabel.m; sourceTree = "<group>"; };
 		7799A5971D87EDA2004DBEBD /* FMLyricViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMLyricViewController.h; sourceTree = "<group>"; };
 		7799A5981D87EDA2004DBEBD /* FMLyricViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMLyricViewController.m; sourceTree = "<group>"; };
-		7799A59B1D87EEC8004DBEBD /* FMConst.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FMConst.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -152,7 +153,8 @@
 		7799A59A1D87EEA0004DBEBD /* Common */ = {
 			isa = PBXGroup;
 			children = (
-				7799A59B1D87EEC8004DBEBD /* FMConst.h */,
+				777F98951DAB431E00EECEEC /* FMLyricModelConst.h */,
+				777F98981DAB436600EECEEC /* FMLyricViewConst.h */,
 			);
 			name = Common;
 			sourceTree = "<group>";

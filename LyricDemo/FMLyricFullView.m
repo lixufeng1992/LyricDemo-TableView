@@ -1,5 +1,5 @@
 //
-//  FMLyricPanel.m
+//  FMLyricFullView.m
 //  LyricDemo
 //
 //  Created by lixufeng on 16/9/13.
@@ -7,7 +7,6 @@
 //
 
 #import "FMLyricFullView.h"
-#import "FMConst.h"
 #import "FMLyricFileModel.h"
 #import "FMLyricLabel.h"
 
@@ -59,6 +58,7 @@
 
 @property (nonatomic, assign, readwrite) LyricType lyricTypeToShow;
 
+
 @end
 
 @interface FMLyricFullView () <UIScrollViewDelegate>
@@ -86,7 +86,7 @@
     
     self.curSentenceMarginTop = self.lyricScrollView.frame.size.height * 0.5;
     
-    self.shouldHightenedByWord = NO;
+    self.shouldHightenedByWord = YES;
     
     self.curSentenceFont = [UIFont boldSystemFontOfSize:11];
     self.normalSentenceFont = [UIFont systemFontOfSize:8];
@@ -106,10 +106,11 @@
     self.dragFinishDelayTime = 6;
     
     self.curScrollOffsetYArr = [NSMutableArray array];
- 
+    
     self.isDraging = NO;
     
     self.lyricTypeToShow = self.singleLyricModel.lyricType;
+    
 }
 
 - (void)_initLyricScrollView{
@@ -148,7 +149,7 @@
     
 }
 
-- (void)layoutLyricPanel{
+- (void)layoutLyricView{
     
     FMSingleLyricModel* singleLyricModel = self.singleLyricModel;
     
@@ -166,12 +167,13 @@
             return NSOrderedSame;
         }
     }];
-
+    
     _sortedBeginTimeKeys = allBeginTimeStamp;
     
     //CGFloat maginBottom = 10;
     
-    CGFloat curLabelY = self.curSentenceMarginTop;
+    self.curSentenceMarginTop = self.lyricScrollView.frame.size.height * 0.5;
+    CGFloat curLabelY = self.curSentenceMarginTop;//
     
     CGFloat curScrollOffsetY = 0;
     
@@ -197,6 +199,8 @@
                 break;
         }
         
+        [labelLine setTextColor:self.normalSentenceColor maskColor:self.highlightedWordColor];
+        
         labelLine.tag = i + kLineLabelTagInitialNumber;
         
         NSString* key = allBeginTimeStamp[i];
@@ -204,11 +208,11 @@
         
         CGSize textSize = [labelLine textSizeWithHeightLimit];
         CGFloat labelH = textSize.height;
-
+        
         CGFloat labelY;
         
         if(textSize.width > self.lyricDispalayWidth){
-           NSLog(@"有折行");
+            NSLog(@"有折行");
         }
         
         labelY = curLabelY;
@@ -220,6 +224,7 @@
         labelFrame.origin.y = labelY;
         labelFrame.size.height = labelH;
         labelLine.frame = labelFrame;
+        NSLog(@"正在布局歌词行：labelFram=%@,fullView.frame=%@,scrollView.frame=%@",NSStringFromCGRect(labelFrame),NSStringFromCGRect(self.frame),NSStringFromCGRect(self.lyricScrollView.frame));
         
         [self.curScrollOffsetYArr addObject:@(curScrollOffsetY)];
         
@@ -230,7 +235,7 @@
     }
     self.lyricScrollView.contentSize = CGSizeMake(0, curLabelY + (self.lyricScrollView.frame.size.height - self.curSentenceMarginTop));
     
- }
+}
 
 
 - (void)loadLyricAtPath:(NSString *)lyricPath translateLyricAtPath:(NSString *)translateLyricPath{
@@ -246,13 +251,13 @@
 
 - (void)loadLyricAtPath:(NSString *)lyricPath translateLyricAtPath:(NSString *)translateLyricPath lyricFileType:(FMLyricFileType)lyricFileType{
     self.lyricFileModel = [[FMLyricFileModel alloc] initWithLyricFilePath:lyricPath type:lyricFileType];
-    [self layoutLyricPanel];
+    [self layoutLyricView];
 }
 
 
 - (void)loadLyricContent:(NSString *)lyricContent translateLyricContent:(NSString *)translateLyricContent lyricFileType:(FMLyricFileType)lyricFileType{
     self.lyricFileModel = [[FMLyricFileModel alloc] initWithLyricContent:lyricContent type:lyricFileType];
-    [self layoutLyricPanel];
+    [self layoutLyricView];
 }
 
 - (void)setLyricDisplayWidth:(CGFloat)width{
@@ -272,7 +277,7 @@
 }
 
 - (void)setCurSentenceFont:(UIFont *)curSentenceFont
-                  normalSentenceFont:(UIFont *)normalSentenceFont{
+        normalSentenceFont:(UIFont *)normalSentenceFont{
     _curSentenceFont = curSentenceFont;
     _normalSentenceFont = normalSentenceFont;
 }
@@ -345,6 +350,11 @@
 
 - (void)repaintWithProgressTime:(double)progressTime{
     //millProgressTime:毫秒;
+    
+    if(self.isDraging){
+        return;
+    }
+    
     if(progressTime < 0){
         NSLog(@"参数progressTime[%f]有误",progressTime);
         return;
@@ -355,7 +365,7 @@
         return;
     }
     
-    NSInteger millProgressTime = (int) (progressTime * kMillSceondsPerSecond);
+    NSInteger millProgressTime = (NSInteger) (progressTime * kMillSceondsPerSecond);
     
     NSInteger curLine;
     NSInteger curColumn;
@@ -389,12 +399,12 @@
         }
         //同一行内：打开 关闭 打开 关闭 循环测试
         if(self.shouldHightenedByWord){
-           //在本行逐字开关依然打开
+            //在本行逐字开关依然打开
             if(![lineLabel isOpenedAnimation]){
                 //本行上没有动画，中间时点击了逐字开关，从curColumn位置开始动画
                 [self startLineLabelAnimation:lineLabel fromColumn:curColumn withMatchedBeginTimeKey:matchedBeginTimeKey isLastColumn:isLastColumn];
             }else{
-               //本行已经开启了动画，什么都不做
+                //本行已经开启了动画，什么都不做
             }
         }else{
             //在本行中间逐字开关被关闭
@@ -407,8 +417,8 @@
             }
         }
     }else{
-        NSLog(@"到下一行了,当前行是：curLine:%zd,text:%@",curLine,[lineLabel text]);
-        
+        NSLog(@"到下一行了,当前行是：curLine:%zd,text:%@,frame=%@",curLine,[lineLabel text],NSStringFromCGRect(lineLabel.frame));
+        NSLog(@"FullView.frame=%@,scrollView.frame=%@",NSStringFromCGRect(self.frame),NSStringFromCGRect(self.lyricScrollView.frame));
         if(self.shouldHightenedByWord){
             //本行开始时打开了逐字开关
             if(![lineLabel isOpenedAnimation]){
@@ -426,7 +436,7 @@
                 self.lyricScrollView.contentOffset = CGPointMake(0, offsetY);
             }];
         }
-
+        
     }
     
 }
@@ -473,7 +483,7 @@
     
     //当前位置所占句子百分比
     CGFloat curLocationPoint = (allWordsDuration - leftDutation) / allWordsDuration;;
-   
+    
     
     for (NSInteger i = fromColumn; i < curWordModels.count; i++) {
         
@@ -506,10 +516,10 @@
 
 /**
  刷新面板所有Label颜色时，
-   如果逐字开关打开：当前行higtedColor设置(maskLabel)，
-                  其它行Label设置为normalColor
-   如果逐字开关关闭：当前行textLabel设置为curSentenColor
-                  其它行Label设置为normalColor
+ 如果逐字开关打开：当前行higtedColor设置(maskLabel)，
+ 其它行Label设置为normalColor
+ 如果逐字开关关闭：当前行textLabel设置为curSentenColor
+ 其它行Label设置为normalColor
  
  
  */
@@ -533,9 +543,9 @@
             }
             
             //不是高亮行的行，如果有动画，则动画移除，再变色
-           if((label != self.curLineLabel) && [label isOpenedAnimation] && self.lyricTypeToShow == LyricType_QRC){
-               [label removeAnimation];
-           }
+            if((label != self.curLineLabel) && [label isOpenedAnimation] && self.lyricTypeToShow == LyricType_QRC){
+                [label removeAnimation];
+            }
             
         }
     }];
@@ -555,7 +565,7 @@
     NSUInteger count = _sortedBeginTimeKeys.count;
     NSInteger expLineIdx = -1;
     NSInteger expColumnIdx = -1;
-
+    
     for (NSUInteger i = 0; i < count; i++) {
         if(millProgressTime == [_sortedBeginTimeKeys[i] intValue]){
             expLineIdx = i;
@@ -615,20 +625,12 @@
 //刷新下一行时会自动滚到当前行，当滑动面板结束三秒后回到当前行
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView{
     
-    if(self.isDraging){
-        return;
-    }
-   
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(scrollToCurrentSentence) object:nil];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(_scrollToCurrentSentence) object:nil];
     
     self.isDraging = YES;
     
     NSLog(@"拖动了歌词面板，");
-    self.standerLineView.alpha = 0.0;
     self.standerLineView.hidden = NO;
-    [UIView animateWithDuration:0.5 animations:^{
-        self.standerLineView.alpha = 1.0;
-    }];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView{
@@ -637,7 +639,7 @@
     
     UILabel* leftTimeLabel = (UILabel*)[self.standerLineView viewWithTag:kStanderLineLeftTimeLabelTag];
     
-    NSInteger curLine =  [self getcurLineNumWhenScrollTo:scrollView.contentOffset];
+    NSInteger curLine =  [self _getcurLineNumWhenScrollTo:scrollView.contentOffset];
     NSInteger scrollToTimeMills = [_sortedBeginTimeKeys[curLine] intValue];//毫秒  /*滚动过程中，歌词面板中间位置是哪一行*/
     self.scrollToTimeMills = scrollToTimeMills;
     
@@ -651,16 +653,18 @@
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate{
     
+    
     if(!decelerate){//生硬拖动，没有减速过程
-         [self performSelector:@selector(scrollToCurrentSentence) withObject:nil afterDelay:self.dragFinishDelayTime];
-         self.isDraging = NO;
+        [self performSelector:@selector(_scrollToCurrentSentence) withObject:nil afterDelay:self.dragFinishDelayTime];
+        //self.isDraging = NO;
+        NSLog(@"Scroll:scrollViewDidEndDragging");
     }
 }
 //在一次拖动减速过程未结束再次拖动时不会调用，只会在彻底拖动结束后才会调用
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
-    self.isDraging = NO;
-    [self performSelector:@selector(scrollToCurrentSentence) withObject:nil afterDelay:self.dragFinishDelayTime];
-    
+    //self.isDraging = NO;
+    [self performSelector:@selector(_scrollToCurrentSentence) withObject:nil afterDelay:self.dragFinishDelayTime];
+    NSLog(@"Scroll:scrollViewDidEndDecelerating");
 }
 
 - (void)standerLineRightPlayBtnPressAction:(UIButton*)sender{
@@ -669,22 +673,15 @@
     NSLog(@"传给播放器的参数：%f",scrollToTimeSecond);
     if([self.delegate conformsToProtocol:@protocol(FMLyricViewDelegate)] &&
        [self.delegate respondsToSelector:@selector(lyricView:didEndDraggingToProgress:)]){
-            [self.delegate lyricView:self didEndDraggingToProgress:scrollToTimeSecond];
+        [self.delegate lyricView:self didEndDraggingToProgress:scrollToTimeSecond];
     }
 }
 
-- (void)scrollToCurrentSentence{
+- (void)_scrollToCurrentSentence{
     NSLog(@"拖动结束，返回当前行");
-    if(!self.isDraging){
-        [UIView animateWithDuration:1.5 animations:^{
-            self.standerLineView.alpha = 0.0;
-        } completion:^(BOOL finished) {
-            if(finished){
-                self.standerLineView.hidden = YES;
-            }
-        }];
-     }
-   
+    self.isDraging = NO;
+    self.standerLineView.hidden = YES;
+    
     CGFloat offsetY = [self.curScrollOffsetYArr[self.curLine] floatValue];
     [UIView animateWithDuration:1.0 animations:^{
         self.lyricScrollView.contentOffset = CGPointMake(0, offsetY);
@@ -692,7 +689,7 @@
     
 }
 
-- (NSInteger)getcurLineNumWhenScrollTo:(CGPoint)scrollOffset{
+- (NSInteger)_getcurLineNumWhenScrollTo:(CGPoint)scrollOffset{
     
     NSInteger idx = 0;
     CGFloat scrollOffsetY = scrollOffset.y;

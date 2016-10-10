@@ -7,7 +7,7 @@
 //
 
 #import "FMLyricLabel.h"
-#import "FMConst.h"
+#import "FMLyricViewConst.h"
 
 #define kLyrcisAnimationKey @"kLyrcisAnimationKey"
 #define kLyricAnimationPropertyKey @"bounds.size.width"
