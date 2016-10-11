@@ -156,7 +156,7 @@
     NSUInteger allCntOfLines = singleLyricModel.sentencseDict.count;
     
     NSArray<NSString*>* allBeginTimeStamp = [singleLyricModel.sentencseDict.allKeys copy];
-    allBeginTimeStamp = [allBeginTimeStamp sortedArrayUsingComparator:^NSComparisonResult(NSString*  _Nonnull obj1, NSString*  _Nonnull obj2) {
+    allBeginTimeStamp = [allBeginTimeStamp sortedArrayUsingComparator:^NSComparisonResult(NSString* obj1, NSString* obj2) {
         int first = [obj1 intValue];
         int second = [obj2 intValue];
         if(first > second){
