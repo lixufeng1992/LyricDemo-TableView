@@ -54,7 +54,7 @@
 - (void)initLyricPanel{
     CGRect lyricPanelFrame = CGRectMake(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT - SLIDER_HEIGHT);
     _lyricPanel = [[FMLyricFullView alloc] initWithFrame:lyricPanelFrame];
-    _lyricPanel.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"glance_bg"]];
+    _lyricPanel.backgroundColor = [UIColor clearColor];
     _lyricPanel.alpha = 0.6;
     [self.view addSubview:_lyricPanel];
     
@@ -72,7 +72,6 @@
     [_slider addTarget:self action:@selector(sliderMove:) forControlEvents:UIControlEventValueChanged];
     
     [self.view addSubview:_slider];
-    
 }
 
 //逐字／逐行开关
@@ -87,8 +86,8 @@
     _rollSwitcher.clipsToBounds = YES;
     _rollSwitcher.layer.cornerRadius = 15;
     _rollSwitcher.layer.masksToBounds = YES;
-    [_rollSwitcher setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
-    [_rollSwitcher setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
+    [_rollSwitcher setTitleColor:[UIColor blackColor] forState:UIControlStateSelected];
+    [_rollSwitcher setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     _rollSwitcher.contentMode = UIViewContentModeScaleAspectFit;
     [self.view addSubview:_rollSwitcher];
     [_rollSwitcher setSelected:NO];
@@ -107,8 +106,8 @@
     _pauseOrBeginSwitcher.clipsToBounds = YES;
     _pauseOrBeginSwitcher.layer.cornerRadius = 15;
     _pauseOrBeginSwitcher.layer.masksToBounds = YES;
-    [_pauseOrBeginSwitcher setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
-    [_pauseOrBeginSwitcher setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
+    [_pauseOrBeginSwitcher setTitleColor:[UIColor blackColor] forState:UIControlStateSelected];
+    [_pauseOrBeginSwitcher setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     _pauseOrBeginSwitcher.contentMode = UIViewContentModeScaleAspectFit;
     [self.view addSubview:_pauseOrBeginSwitcher];
     [_pauseOrBeginSwitcher setSelected:NO];
@@ -166,7 +165,7 @@
     NSString* fileName = @"lyric.qrc";
     NSString* lyricFilepath = [docPath stringByAppendingPathComponent:fileName];
     
-    [self.lyricPanel setLyricIdxToShow:1];
+    [self.lyricPanel setLyricIdxToShow:0];
     [self.lyricPanel loadLyricAtPath:lyricFilepath translateLyricAtPath:nil];
     
     //[self startTimer];

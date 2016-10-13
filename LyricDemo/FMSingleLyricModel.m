@@ -21,8 +21,6 @@
 @property (nonatomic, copy, readwrite) NSString* creator; //歌词文件创建者
 @property (nonatomic, assign, readwrite) CGFloat offset; //整体偏移
 
-
-
 @end
 
 @implementation FMLyricWordModel

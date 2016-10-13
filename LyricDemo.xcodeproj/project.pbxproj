@@ -16,6 +16,7 @@
 		772337031D9E57440073F8F8 /* FMLyricFullView.m in Sources */ = {isa = PBXBuildFile; fileRef = 772337021D9E57440073F8F8 /* FMLyricFullView.m */; };
 		772337061D9E58780073F8F8 /* FMLyricSmallView.m in Sources */ = {isa = PBXBuildFile; fileRef = 772337051D9E58780073F8F8 /* FMLyricSmallView.m */; };
 		772337091D9E6DE50073F8F8 /* FMLyricSingleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 772337081D9E6DE50073F8F8 /* FMLyricSingleViewController.m */; };
+		774F9AB11DAD0F4B00B49677 /* FMLyricCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 774F9AB01DAD0F4B00B49677 /* FMLyricCell.m */; };
 		775ED6601D80005D0025FD10 /* GDataXMLNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 775ED65F1D80005D0025FD10 /* GDataXMLNode.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		775ED6621D8000810025FD10 /* libxml2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 775ED6611D8000810025FD10 /* libxml2.tbd */; };
 		777FBFC71D94C7EF0081F6B3 /* FMLyricLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 777FBFC61D94C7EF0081F6B3 /* FMLyricLabel.m */; };
@@ -40,6 +41,8 @@
 		772337051D9E58780073F8F8 /* FMLyricSmallView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMLyricSmallView.m; sourceTree = "<group>"; };
 		772337071D9E6DE50073F8F8 /* FMLyricSingleViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMLyricSingleViewController.h; sourceTree = "<group>"; };
 		772337081D9E6DE50073F8F8 /* FMLyricSingleViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMLyricSingleViewController.m; sourceTree = "<group>"; };
+		774F9AAF1DAD0F4B00B49677 /* FMLyricCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMLyricCell.h; sourceTree = "<group>"; };
+		774F9AB01DAD0F4B00B49677 /* FMLyricCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMLyricCell.m; sourceTree = "<group>"; };
 		775ED65E1D80005D0025FD10 /* GDataXMLNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GDataXMLNode.h; sourceTree = "<group>"; };
 		775ED65F1D80005D0025FD10 /* GDataXMLNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GDataXMLNode.m; sourceTree = "<group>"; };
 		775ED6611D8000810025FD10 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
@@ -146,6 +149,8 @@
 				772337051D9E58780073F8F8 /* FMLyricSmallView.m */,
 				777FBFC51D94C7EF0081F6B3 /* FMLyricLabel.h */,
 				777FBFC61D94C7EF0081F6B3 /* FMLyricLabel.m */,
+				774F9AAF1DAD0F4B00B49677 /* FMLyricCell.h */,
+				774F9AB01DAD0F4B00B49677 /* FMLyricCell.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -235,6 +240,7 @@
 				775ED6601D80005D0025FD10 /* GDataXMLNode.m in Sources */,
 				7713078F1D7D804C00DD2869 /* FMLyricFileModel.m in Sources */,
 				7713077A1D7D800300DD2869 /* AppDelegate.m in Sources */,
+				774F9AB11DAD0F4B00B49677 /* FMLyricCell.m in Sources */,
 				772337061D9E58780073F8F8 /* FMLyricSmallView.m in Sources */,
 				772337091D9E6DE50073F8F8 /* FMLyricSingleViewController.m in Sources */,
 				771307771D7D800300DD2869 /* main.m in Sources */,

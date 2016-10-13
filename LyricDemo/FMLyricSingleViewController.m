@@ -122,7 +122,7 @@
     NSString* fileName = @"lyric.qrc";
     NSString* lyricFilepath = [docPath stringByAppendingPathComponent:fileName];
     
-    [_smallLyicView setLyricIdxToShow:1];
+    [_smallLyicView setLyricIdxToShow:2];
     [_smallLyicView loadLyricAtPath:lyricFilepath translateLyricAtPath:nil];
     
     //[self startTimer];

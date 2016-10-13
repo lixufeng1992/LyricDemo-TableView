@@ -19,14 +19,10 @@
 
 @property (nonatomic, strong, readwrite) CALayer* maskLayer;
 
-//当前行是高亮行
-@property (nonatomic, assign, readwrite) BOOL shouldHightenedByWord;
-@property (nonatomic, strong, readwrite) UIColor* highlightedWordColor;
-@property (nonatomic, strong, readwrite) UIColor* curSentenceColor;
-@property (nonatomic, strong, readwrite) UIColor* normalSentenceColor;
+@property (nonatomic, strong, readwrite) UIColor* textColor;
+@property (nonatomic, strong, readwrite) UIColor* maskColor;
 
-@property (nonatomic, strong, readwrite) UIFont* highlightenedSentenceFont;
-@property (nonatomic, strong, readwrite) UIFont* normalSentenceFont;
+@property (nonatomic, strong, readwrite) UIFont* textFont;
 
 @property (nonatomic, assign, readwrite) NSTextAlignment textAlignment;
 
@@ -57,25 +53,22 @@
 
 - (void)setupDefault {
     
-    self.highlightedWordColor = [UIColor greenColor]; //逐字颜色默认未绿色
-    self.curSentenceColor = [UIColor blueColor]; //逐句颜色默认未蓝色
-    self.normalSentenceColor = [UIColor whiteColor]; //其它句子颜色默认未白色
+    self.maskColor = [UIColor greenColor]; //逐字颜色默认未绿色
+    self.textColor = [UIColor blackColor]; //逐句颜色默认未蓝色
     
-    self.highlightenedSentenceFont = [UIFont boldSystemFontOfSize:16.0f];
-    self.normalSentenceFont = [UIFont boldSystemFontOfSize:15];
+    self.textFont = [UIFont boldSystemFontOfSize:16];
     
     self.textAlignment = NSTextAlignmentCenter;
     
-    self.textLabel.textColor = _normalSentenceColor;
-    self.textLabel.font = _normalSentenceFont;
+    self.textLabel.textColor = _textColor;
+    self.textLabel.font = _textFont;
     self.textLabel.textAlignment = _textAlignment;
     
-    self.maskLabel.textColor = _normalSentenceColor;
-    self.maskLabel.font = _normalSentenceFont;
+    self.maskLabel.textColor = _maskColor;
+    self.maskLabel.font = _textFont;
     self.maskLabel.textAlignment = _textAlignment;
     
     self.isOpenedAnimation = NO;
-    self.shouldHightenedByWord = NO;
     
     CALayer *maskLayer = [CALayer layer];
     maskLayer.anchorPoint = CGPointMake(0, 0.5);
@@ -88,28 +81,12 @@
 }
 
 - (void)setTextColor:(UIColor*)textColor maskColor:(UIColor*)maskColor{
+    
+    _textColor = textColor;
+    _maskColor = maskColor;
+    
     _textLabel.textColor = textColor;
     _maskLabel.textColor = maskColor;
-}
-
-- (void)setHighlightedWordColor:(UIColor *)highlightedWordColor
-               curSentenceColor:(UIColor *)curSentenceColor
-     normalSentenceColor:(UIColor *)normalSentenceColor{
-    
-    _highlightedWordColor = highlightedWordColor;
-    _curSentenceColor = curSentenceColor;
-    _normalSentenceColor = normalSentenceColor;
-    
-    _maskLabel.textColor = _highlightedWordColor;
-    if(self.shouldHightenedByWord){
-        _textLabel.textColor = _normalSentenceColor;;
-    }else{
-        _textLabel.textColor = _curSentenceColor;
-    }
-}
-
-- (void)setShouldHilightenedByWord:(BOOL)shouldHightenedByWord{
-    _shouldHightenedByWord = shouldHightenedByWord;
 }
 
 - (void)setLineBreakEnable:(BOOL)enable{
@@ -140,33 +117,31 @@
     return self.textLabel.text;
 }
 
-- (void)setHighlitenedFont:(UIFont*)hightenedFont normalFont:(UIFont*)normalFont{
-    
-    _highlightenedSentenceFont = hightenedFont;
-    _normalSentenceFont = normalFont;
-    
-    self.textLabel.font = _highlightenedSentenceFont;
-    self.maskLabel.font = _normalSentenceFont;
+- (UIFont*)textFont{
+    return _textFont;
 }
 
-- (UIFont*)font{
-    return self.textLabel.font;
+- (void)setFont:(UIFont *)font{
+    _textFont = font;
+    
+    _textLabel.font = font;
+    _maskLabel.font = font;
 }
 
 - (CGSize)textSizeWithWidthLimit{
-    NSDictionary *attribute = @{NSFontAttributeName:self.font};
+    NSDictionary *attribute = @{NSFontAttributeName:self.textFont};
     CGSize textSize = [self.text boundingRectWithSize:CGSizeMake(self.lyricDispalayWidth, 0) options: NSStringDrawingTruncatesLastVisibleLine | NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading attributes:attribute context:nil].size;
     return textSize;
 }
 
 - (CGSize)textSizeWithHeightLimit{
-    NSDictionary *attribute = @{NSFontAttributeName:self.font};
+    NSDictionary *attribute = @{NSFontAttributeName:self.textFont};
     CGSize textSize = [self.text boundingRectWithSize:CGSizeMake(0, self.bounds.size.height) options: NSStringDrawingTruncatesLastVisibleLine | NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading attributes:attribute context:nil].size;
     return textSize;
 }
 
 - (CGSize)wordSizeWithHeightLimit:(NSString*)word{
-    NSDictionary *attribute = @{NSFontAttributeName:self.font};
+    NSDictionary *attribute = @{NSFontAttributeName:self.textFont};
     CGSize wordSize = [word boundingRectWithSize:CGSizeMake(0, self.bounds.size.height) options: NSStringDrawingTruncatesLastVisibleLine | NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading attributes:attribute context:nil].size;
     return wordSize;
 }
@@ -234,11 +209,11 @@
     NSLog(@"开始动画，传进来的参数：timesAbsoluteArr=%@,locationPercentArr=%@,duration=%f",timesAbsoluteArr,locationPercentArr,duration);
     
     NSLog(@"动画开始，动画参数：keyTimes=%@,values=%@,duration=%f,"
-                            "titleLabel.textColor=%@,titleLabel.bgColor=%@,"
-                            "maskLabel.textColor=%@,maskLabel.bgColor=%@",
-                            keyFrameAnimation.keyTimes,keyFrameAnimation.values,keyFrameAnimation.duration,
-                            _textLabel.textColor,_textLabel.backgroundColor,
-                            _maskLabel.textColor,_maskLabel.backgroundColor
+          "titleLabel.textColor=%@,titleLabel.bgColor=%@,"
+          "maskLabel.textColor=%@,maskLabel.bgColor=%@",
+          keyFrameAnimation.keyTimes,keyFrameAnimation.values,keyFrameAnimation.duration,
+          _textLabel.textColor,_textLabel.backgroundColor,
+          _maskLabel.textColor,_maskLabel.backgroundColor
           
           );
     

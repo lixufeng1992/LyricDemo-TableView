@@ -43,33 +43,19 @@
 
 - (void)loadLyricContent:(NSString *)lyricContent translateLyricContent:(NSString *)translateLyric lyricFileType:(FMLyricFileType)lyricFileType;
 
-- (void)setLyricDisplayWidth:(CGFloat)width;
-
 - (void)setLyricIdxToShow:(NSUInteger)idx;
 
-
-- (void)setHighlightedWordColor:(UIColor *)highlightedWordColor
-               curSentenceColor:(UIColor *)curSentenceColor
-            normalSentenceColor:(UIColor *)normalSentenceColor;
+- (void)setHighlightedWordsColor:(UIColor *)highlightedWordsColor
+             normalSentenceColor:(UIColor *)normalSentenceColor;
 
 - (void)setCurSentenceFont:(UIFont *)curSentenceFont
         normalSentenceFont:(UIFont *)normalSentenceFont;
 
 - (void)setTextAlignment:(FMTextAlignment)textAlignment;
 
-- (void)setCurSentenceMarginTop:(CGFloat)marginTop;
-
 - (void)setShouldHilightenedByWord:(BOOL)shouldHightenedByWord;
 
-- (void)setMaxDisplayLineAbove:(NSUInteger)maxDisplayLineAbove;
-
-- (void)setMaxDisplayLineBelow:(NSUInteger)maxDisplayLineBelow;
-
 - (void)setDragable:(BOOL)dragable;
-
-- (void)setStanderLineView:(UIView *)standerLineView;
-
-- (void)setSpaceBetweenLine:(CGFloat)spaceBetweenLine;
 
 - (void)setSpaceBetweenSentence:(CGFloat)spaceBetweenSentence;
 
@@ -77,8 +63,6 @@
 
 //progessTime:以秒为单位： 198.897000秒
 - (void)repaintWithProgressTime:(double)progressTime;
-
-- (void)clear;
 
 - (void)resumeAnimation;
 

@@ -14,11 +14,11 @@
 
 - (NSString*)text;
 
-- (void)setHighlitenedFont:(UIFont*)hightenedFont normalFont:(UIFont*)normalFont;
-
 - (void)setTextAlignment:(NSTextAlignment)textAlignment;
 
 - (void)setTextColor:(UIColor*)textColor maskColor:(UIColor*)maskColor;
+
+- (void)setFont:(UIFont*)normalFont;
 
 - (void)startAnimationWithTimesAbsoluteArr:(NSArray<NSNumber*>*)timesAbsoluteArr locationPercentArr:(NSArray<NSNumber*>*)locationPercentArr duration:(CGFloat)duration;
 

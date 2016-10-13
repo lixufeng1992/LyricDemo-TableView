@@ -298,6 +298,9 @@
                     //本行未开过动画，啥事不做
                 }
             }
+        }else{
+            //LRC单行过长？显示不全
+            //TODO : LRC跑马灯
         }
     }else{
         NSLog(@"到下一行了,更新Label的内容");
@@ -463,7 +466,7 @@
         return;
     }
     
-    [lineLabel startAnimationWithTimesAbsoluteArr:timesArr locationPercentArr:locationArr duration:leftDutation];
+    [lineLabel startAnimationWithTimesAbsoluteArr:timesArr locationPercentArr:locationArr duration:finalEndTimePoint];
     
     //[lineLabel showAnimation];
     
@@ -477,7 +480,18 @@
 
 - (void)resetCurSentenceColor{
     
-    [self.curLineLabel setTextColor:self.normalSentenceColor maskColor:self.highlightedWordsColor];
+    if(self.lyricTypeToShow == LyricType_QRC){
+        //highlightedWordsColor;//LRC：当前句颜色，QRC：开启逐字（逐字颜色），开启逐行（逐行颜色）
+        if(self.shouldHightenedByWord){
+            [self.curLineLabel setTextColor:self.normalSentenceColor maskColor:self.highlightedWordsColor];
+        }else{
+            [self.curLineLabel setTextColor:self.highlightedWordsColor maskColor:self.highlightedWordsColor];
+        }
+        
+    }else{
+        [self.curLineLabel setTextColor:self.highlightedWordsColor maskColor:self.highlightedWordsColor]; //LRC下maskLabel不显示，设置第二参数无用
+    }
+
 }
 
 - (NSString*)_getCurSentenceTimeStampWithPregressTime:(NSInteger)millProgressTime curLine:(NSInteger *)curLine curColumn:(NSInteger*)curColumn isLastColumn:(BOOL*)isLastColumn{

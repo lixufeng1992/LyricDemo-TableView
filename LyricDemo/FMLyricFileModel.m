@@ -27,6 +27,7 @@
     NSMutableString* metaInfo;
     
 }
+#pragma -mark 所有属性
 //歌词文件保存时间
 @property (nonatomic, strong, readwrite) NSDate* saveTime;
 //歌词文件类型
@@ -61,9 +62,7 @@
 @end
 
 
-
 @implementation FMLyricFileModel
-
 
 //禁止外部调用，用initWithLyricFilePath OR initWithLyricContent
 - (instancetype)init{
@@ -75,6 +74,7 @@
         metaInfo = [NSMutableString string];
         _isXML2ParserTurnOn = YES;
         _isLRCLyicContentSeparatedByNewLine = NO;
+        //正则匹配
         _QRC_sentencePatternTmp = @"\\[\\d+,\\d+\\]";
         _QRC_wordUnitPatternTmp = @"\\(\\d+,\\d+\\)";
         _LRC_sentencePatternTmp = @"\\[\\d+:\\d+\\.\\d+\\]";
@@ -83,7 +83,7 @@
         _shouldLongSentenceWrap = YES;
         _maxWordNumPerLine = 17;
         
-        _shouldFilterEmptyLine = NO;
+        _shouldFilterEmptyLine = YES;
     }
     return self;
 }
@@ -296,8 +296,6 @@
     return singleLyricModel;
 }
 
-
-
 - (FMSingleLyricModel*)_parseLRCLyricContent_nonNewLine:(NSString*)lyricContent{
     
     sentencseDict = [NSMutableDictionary dictionary];
@@ -343,8 +341,6 @@
     [self _clearMetaInfo];
     return singleLyricModel;
 }
-
-
 
 - (void)_LRC_parseLine:(NSString*)line curLineIdx:(NSUInteger)curLineIdx{
     //[19:38.00]你是火 你是风 你是织网的恶魔
@@ -590,7 +586,6 @@
         NSInteger sentenceEndTime = [sentenceBeginTime intValue] + [sentenceDuration intValue];
         
         FMLyricSentenceModel* sentenceModel = [[FMLyricSentenceModel alloc] initWithSentence:sentence beginTime:[sentenceBeginTime intValue] duration:[sentenceDuration intValue] endTime:sentenceEndTime line:curLineIdx relativeWordModels:relativeWordModels absoluteWordModels:absoluteWordModels allWordsDuration:allWordsDuration];
-        
         
         if(self.shouldLongSentenceWrap && (sentenceModel.absoluteWordModels.count > self.maxWordNumPerLine)){  //35
             //单行歌词字数超过17，开始折行处理

@@ -29,7 +29,6 @@ typedef NS_ENUM(NSInteger, LyricType){
 //字所在行的列序号，从0开始
 @property (nonatomic, assign, readonly) NSInteger column;
 
-
 - (instancetype)initWithWord:(NSString*)word beginTime:(NSInteger)beginTime duration:(NSInteger)duration line:(NSInteger)line column:(NSInteger)column;
 
 @end
