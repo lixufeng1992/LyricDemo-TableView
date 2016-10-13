@@ -26,11 +26,10 @@
 
 - (void)setLyricIdxToShow:(NSUInteger)idx;
 
-- (void)setHighlightedWordColor:(UIColor *)highlightedWordColor
-               curSentenceColor:(UIColor *)curSentenceColor
+- (void)setHighlightedWordsColor:(UIColor *)highlightedWordColor
             normalSentenceColor:(UIColor *)normalSentenceColor;
 
-- (void)setCurSentenceFont:(UIFont *)curSentenceFont;
+- (void)setFont:(UIFont *)textFont;
 
 - (void)setTextAlignment:(FMTextAlignment)textAlignment;
 

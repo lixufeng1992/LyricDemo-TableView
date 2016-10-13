@@ -26,20 +26,22 @@
 
 @property (nonatomic, assign, readwrite) BOOL shouldHightenedByWord;
 
-@property (nonatomic, strong, readwrite) UIFont* curSentenceFont;
+@property (nonatomic, strong, readwrite) UIFont* textFont;
 
-@property (nonatomic, strong, readwrite) UIColor* highlightedWordColor;//逐字高亮颜色
-@property (nonatomic, strong, readwrite) UIColor* curSentenceColor; //逐句底色
-@property (nonatomic, strong, readwrite) UIColor* normalSentenceColor;//其它句子颜色
+@property (nonatomic, strong, readwrite) UIColor* highlightedWordsColor;//逐字高亮颜色
+@property (nonatomic, strong, readwrite) UIColor* normalSentenceColor;//句子底色
 
 @property (nonatomic, strong, readwrite) NSArray<NSString*>* sortedBeginTimeKeys;
 
 @property (nonatomic, assign, readwrite) NSInteger curLine;
 @property (nonatomic, strong, readwrite) NSString* lastUpdateedSentenceBeginTimeKey;
 
+@property (nonatomic, assign, readwrite) LyricType lyricTypeToShow;
+
 @property (nonatomic, assign, readwrite) NSInteger midColumn;
 @property (nonatomic, assign, readwrite) BOOL shouldHorseRace;
 @property (nonatomic, assign, readwrite) NSInteger prevColumn;
+
 
 @end
 
@@ -77,15 +79,15 @@
     
     self.shouldHightenedByWord = YES;
     
-    self.curSentenceFont = [UIFont boldSystemFontOfSize:11];
+    self.textFont = [UIFont boldSystemFontOfSize:11];
     
-    self.highlightedWordColor = [UIColor greenColor]; //逐字颜色默认未绿色
-    self.curSentenceColor = [UIColor yellowColor]; //逐句颜色默认未蓝色
-    self.normalSentenceColor = [UIColor whiteColor]; //其它句子颜色默认未白色
+    self.highlightedWordsColor = [UIColor greenColor]; //逐字颜色默认未绿色
+    self.normalSentenceColor = [UIColor blackColor]; //其它句子颜色默认未白色
     
     self.textAlignment = FMTextAlignmentMiddle;
     
     self.curLine = 0;
+    self.lyricTypeToShow = self.singleLyricModel.lyricType;
     
     self.midColumn = -1;
     self.shouldHorseRace = NO;
@@ -121,7 +123,7 @@
     
     [labelLine setLineBreakEnable:NO];
     [labelLine setLyricDispalayWidth:self.lyricDispalayWidth];
-    [labelLine setHighlitenedFont:_curSentenceFont normalFont:_curSentenceFont];
+    [labelLine setFont:self.textFont];
     
     switch (self.textAlignment) {
         case FMTextAlignmentLeft:
@@ -138,7 +140,7 @@
             break;
     }
     
-    [labelLine setTextColor:self.normalSentenceColor maskColor:self.highlightedWordColor];
+    [labelLine setTextColor:self.normalSentenceColor maskColor:self.highlightedWordsColor];
     
     self.curLineLabel = labelLine;
     
@@ -177,16 +179,14 @@
     _lyricIdxToShow = idx;
 }
 
-- (void)setHighlightedWordColor:(UIColor *)highlightedWordColor
-               curSentenceColor:(UIColor *)curSentenceColor
+- (void)setHighlightedWordsColor:(UIColor *)highlightedWordsColor
             normalSentenceColor:(UIColor *)normalSentenceColor{
-    _highlightedWordColor = highlightedWordColor;
-    _curSentenceColor = curSentenceColor;
+    _highlightedWordsColor = highlightedWordsColor;
     _normalSentenceColor = normalSentenceColor;
 }
 
-- (void)setCurSentenceFont:(UIFont *)curSentenceFont{
-    _curSentenceFont = curSentenceFont;
+- (void)setFont:(UIFont *)textFont{
+    _textFont = textFont;
 }
 
 - (void)setTextAlignment:(FMTextAlignment)textAlignment{
@@ -477,12 +477,7 @@
 
 - (void)resetCurSentenceColor{
     
-    if(self.shouldHightenedByWord){
-        [self.curLineLabel setTextColor:self.normalSentenceColor maskColor:self.highlightedWordColor];
-    }else{
-        [self.curLineLabel setTextColor:self.curSentenceColor maskColor:self.highlightedWordColor];
-    }
-    
+    [self.curLineLabel setTextColor:self.normalSentenceColor maskColor:self.highlightedWordsColor];
 }
 
 - (NSString*)_getCurSentenceTimeStampWithPregressTime:(NSInteger)millProgressTime curLine:(NSInteger *)curLine curColumn:(NSInteger*)curColumn isLastColumn:(BOOL*)isLastColumn{
